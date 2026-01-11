@@ -1,34 +1,11 @@
 import streamlit as st
 import pandas as pd
+from util.routeButton import routeButton
 
-styles="""
-<style>      
-div[data-testid="stButton"] > button {
-  height: 3em;
-  width: 7em;
-  background-color: white
-}
-
-div[data-testid="stButton"] p {
-  font-size: 20px;
-}
-
-div[data-testid="stButton"] {
-  display: flex;
-  justify-content: right;
-}
-</style>
-"""
 
 def targetPage():
-  st.markdown(
-styles,
-      unsafe_allow_html=True
-  )
 
-  if st.button("Back"):
-    st.session_state.page = "upload" 
-    st.rerun() 
+  routeButton("Back","left","upload")
 
   st.title("I-Data")
 
@@ -52,8 +29,8 @@ def select_label_ui():
 
   st.selectbox("",cols,index=index,    key="my_input",
   on_change=on_change,
-  args=["my_input"])
-  
+  args=["my_input"],)
+
 
 def confirm_label_ui():
   df=st.session_state.df
@@ -62,11 +39,32 @@ def confirm_label_ui():
   is_reg=is_regression(df[label])
 
   st.session_state.is_regression=is_reg
+
   st.subheader(f"Based on your label( {label} ), your problem will be treated as a {'Regression' if is_reg else 'Classification'} problem")
 
-  if st.button("Next",width="stretch"):
-    st.session_state.page = "drop" 
-    st.rerun() 
+  if (not is_reg) and not pd.api.types.is_numeric_dtype(df[label]):
+    choose_encoding_ui()
+
+  routeButton("Next","right",'drop')
+
+
+def choose_encoding_ui():
+  df=st.session_state.df
+  label=st.session_state.label
+
+  label_values=df[label].unique()
+
+  choosing_messages=[f'0 for {label_values[0]}, 1 for {label_values[1]}',f'0 for {label_values[1]}, 1 for {label_values[0]}']
+
+  if 'choice' in st.session_state:
+    default_choice = st.session_state.choice
+  else:
+    default_choice = 0
+
+  st.subheader("Your label is not binary (0/1). Please choose how you want it to be encoded.")
+  choice=st.radio('',choosing_messages,index=default_choice)
+
+  st.session_state.choice=choosing_messages.index(choice)
 
 
 def is_regression(label_df):
@@ -74,6 +72,7 @@ def is_regression(label_df):
     return False
 
   return True
+
 
 def on_change(key):
   st.session_state.label = st.session_state[key]

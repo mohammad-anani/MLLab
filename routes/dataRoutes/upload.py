@@ -1,34 +1,12 @@
 import streamlit as st
 import pandas as pd
+from util.routeButton import routeButton
+from util.dataFrame import dataFrame
 
-styles="""
-<style>      
-div[data-testid="stButton"] > button {
-  height: 3em;
-  width: 7em;
-  background-color: white
-}
-
-div[data-testid="stButton"] p {
-  font-size: 20px;
-}
-
-div[data-testid="stButton"] {
-  display: flex;
-  justify-content: right;
-}
-</style>
-"""
 
 def uploadPage():
-  st.markdown(
-styles,
-      unsafe_allow_html=True
-  )
 
-  if st.button("Back"):
-    st.session_state.page = "home" 
-    st.rerun() 
+  routeButton("Back","left","home")
 
   st.title("I-Data")
 
@@ -51,15 +29,13 @@ def loaded_dataset_ui():
   df=st.session_state.df
   row_count,col_count=df.shape
   
-  st.dataframe(df.head())
-  st.text(f"{row_count} rows\n{col_count} columns")
+  dataFrame(df)
+
 
   if col_count<2:
     st.error("Dataset should have at least 2 columns")
   else:
-    if st.button("Next",width="stretch"):
-      st.session_state.page = "target" 
-      st.rerun() 
+    routeButton("Next","right",'target')
 
 
 def on_change(key):
