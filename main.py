@@ -3,6 +3,8 @@ from routes.dataRoutes.upload import uploadPage
 from routes.home import homePage
 from routes.dataRoutes.target import targetPage
 
+if 'page' not in st.session_state:
+  st.session_state.page='home'
 
 
 ROUTES = {

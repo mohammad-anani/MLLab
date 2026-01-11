@@ -26,26 +26,26 @@ styles,
       unsafe_allow_html=True
   )
 
+  if st.button("Back"):
+    st.session_state.page = "home" 
+    st.rerun() 
+
   st.title("I-Data")
 
   st.subheader("1-Upload you data(csv only)")
 
   if 'df' not in st.session_state:
-    file_uploader_ui()
+    upload_file_ui()
   else:
     loaded_dataset_ui()
 
 
-def file_uploader_ui():
-  uploaded_file= st.file_uploader("", type="csv")
+def upload_file_ui():
+  uploaded_file= st.file_uploader("", type="csv",
+  key="uploaded_file",
+  on_change=on_change,
+  args=["uploaded_file"])
 
-  if uploaded_file:
-    try:
-      df = pd.read_csv(uploaded_file)
-      st.session_state.df = df
-      st.rerun() 
-    except Exception as e:
-      st.error("Error in file uploading. Try again")
 
 def loaded_dataset_ui():
   df=st.session_state.df
@@ -53,6 +53,20 @@ def loaded_dataset_ui():
   
   st.dataframe(df.head())
   st.text(f"{row_count} rows\n{col_count} columns")
-  if st.button("Next",width="stretch"):
-    st.session_state.page = "target" 
-    st.rerun() 
+
+  if col_count<2:
+    st.error("Dataset should have at least 2 columns")
+  else:
+    if st.button("Next",width="stretch"):
+      st.session_state.page = "target" 
+      st.rerun() 
+
+
+def on_change(key):
+  uploaded_file = st.session_state[key]
+  if uploaded_file:
+    try:
+      df = pd.read_csv(uploaded_file)
+      st.session_state.df = df
+    except Exception as e:
+      st.error("Error in file uploading. Try again")
