@@ -65,7 +65,7 @@ def confirm_label_ui():
   st.subheader(f"Based on your label( {label} ), your problem will be treated as a {'Regression' if is_reg else 'Classification'} problem")
 
   if st.button("Next",width="stretch"):
-    st.session_state.page = "preprocess" 
+    st.session_state.page = "drop" 
     st.rerun() 
 
 
