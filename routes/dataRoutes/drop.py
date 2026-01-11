@@ -10,7 +10,7 @@ def dropPage():
 
   st.title("I-Data")
 
-  st.subheader("2- Remove unwanted features")
+  st.subheader("3- Remove unwanted features")
 
   df=st.session_state.df
   label=st.session_state.label
@@ -27,7 +27,7 @@ def dropPage():
   else:
     default_cols=[]
 
-  cols_to_remove=st.multiselect("",cols,default=default_cols,max_selections=col_count-1 )
+  cols_to_remove=st.multiselect("",cols,default=default_cols,max_selections=col_count-1,label_visibility="collapsed" )
 
   st.session_state.cols_to_remove=cols_to_remove
 
@@ -36,7 +36,7 @@ def dropPage():
   st.subheader("Resulting Dataset:")
   dataFrame(new_x_df)
 
-  routeButton("Next","right",'target')
+  routeButton("Next","right",'filter')
 
 
 # def get_non_numerical_cols(x_df):

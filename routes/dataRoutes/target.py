@@ -29,7 +29,7 @@ def select_label_ui():
 
   st.selectbox("",cols,index=index,    key="my_input",
   on_change=on_change,
-  args=["my_input"],)
+  args=["my_input"],label_visibility="collapsed")
 
 
 def confirm_label_ui():
@@ -62,7 +62,7 @@ def choose_encoding_ui():
     default_choice = 0
 
   st.subheader("Your label is not binary (0/1). Please choose how you want it to be encoded.")
-  choice=st.radio('',choosing_messages,index=default_choice)
+  choice=st.radio('',choosing_messages,index=default_choice,label_visibility="collapsed")
 
   st.session_state.choice=choosing_messages.index(choice)
 

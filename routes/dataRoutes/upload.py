@@ -22,7 +22,7 @@ def upload_file_ui():
   uploaded_file= st.file_uploader("", type="csv",
   key="uploaded_file",
   on_change=on_change,
-  args=["uploaded_file"])
+  args=["uploaded_file"],label_visibility="collapsed")
 
 
 def loaded_dataset_ui():
