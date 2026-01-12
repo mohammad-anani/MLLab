@@ -2,44 +2,38 @@ import streamlit as st
 import pandas as pd
 from util.routeButton import routeButton
 from util.dataFrame import dataFrame
+from .target import encoded_label_df
 
 
 def dropPage():
-
   routeButton("Back","left","target")
-
   st.title("I-Data")
-
   st.subheader("3- Remove unwanted features")
 
-  df=st.session_state.df
+  df=encoded_label_df()
   label=st.session_state.label
 
   x_df=df.drop(label,axis=1)
   cols=x_df.columns
   col_count=x_df.shape[1]
 
-  if "cols_to_remove" in st.session_state:
-    default_cols=st.session_state.cols_to_remove
+  default_cols = [c for c in st.session_state.get("cols_to_remove", []) if c != label]
 
-    if label in default_cols:
-      default_cols.remove(label)
-  else:
-    default_cols=[]
-
-  cols_to_remove=st.multiselect("",cols,default=default_cols,max_selections=col_count-1,label_visibility="collapsed" )
-
-  st.session_state.cols_to_remove=cols_to_remove
-
-  new_x_df=x_df.drop(cols_to_remove,axis=1)
-
+  st.multiselect("",cols,default=default_cols,max_selections=col_count-1,label_visibility="collapsed",on_change=on_change,key='drop_input' )
   st.subheader("Resulting Dataset:")
-  dataFrame(new_x_df)
-
+  dataFrame(removed_cols_df())
   routeButton("Next","right",'filter')
 
 
-# def get_non_numerical_cols(x_df):
-#   return [col for col in x_df.columns
-#             if not pd.api.types.is_numeric_dtype(x_df[col])
-#             and not pd.api.types.is_bool_dtype(x_df[col])]
+def removed_cols_df():
+  df=encoded_label_df()
+
+  if 'cols_to_remove' not in st.session_state:
+    return df 
+
+  cols_to_remove=st.session_state.cols_to_remove
+  return df.drop(columns=cols_to_remove, errors='ignore')
+
+
+def on_change():
+  st.session_state.cols_to_remove = st.session_state[drop_input]

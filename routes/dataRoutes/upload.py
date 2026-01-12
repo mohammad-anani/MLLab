@@ -5,24 +5,18 @@ from util.dataFrame import dataFrame
 
 
 def uploadPage():
-
   routeButton("Back","left","home")
-
   st.title("I-Data")
-
   st.subheader("1-Upload you data(csv only)")
 
-  if 'df' not in st.session_state:
-    upload_file_ui()
-  else:
-    loaded_dataset_ui()
+  upload_file_ui() if 'df' not in st.session_state else loaded_dataset_ui()
 
 
 def upload_file_ui():
   uploaded_file= st.file_uploader("", type="csv",
   key="uploaded_file",
   on_change=on_change,
-  args=["uploaded_file"],label_visibility="collapsed")
+  label_visibility="collapsed")
 
 
 def loaded_dataset_ui():
@@ -31,15 +25,11 @@ def loaded_dataset_ui():
   
   dataFrame(df)
 
-
-  if col_count<2:
-    st.error("Dataset should have at least 2 columns")
-  else:
-    routeButton("Next","right",'target')
+  st.error("Dataset should have at least 2 columns") if col_count<2 else routeButton("Next","right",'target')
 
 
-def on_change(key):
-  uploaded_file = st.session_state[key]
+def on_change():
+  uploaded_file = st.session_state["uploaded_file"]
   if uploaded_file:
     try:
       df = pd.read_csv(uploaded_file)
