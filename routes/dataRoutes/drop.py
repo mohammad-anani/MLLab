@@ -7,7 +7,7 @@ from .target import encoded_label_df
 
 def dropPage():
   routeButton("Back","left","target")
-  st.title("I-Data")
+  st.title("I- Data")
   st.subheader("3- Remove unwanted features")
 
   df=encoded_label_df()

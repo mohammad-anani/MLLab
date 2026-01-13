@@ -7,7 +7,7 @@ from util.dataFrame import dataFrame
 
 def targetPage():
   routeButton("Back","left","upload")
-  st.title("I-Data")
+  st.title("I- Data")
   st.subheader("2-Specify your target column (aka Label)")
   select_label_ui()
 
@@ -58,11 +58,12 @@ def on_encoding_change(choosing_messages):
 
 def encoded_label_df():
 
+  df=st.session_state.df.copy()
   is_regression=st.session_state.is_regression
+  label=st.session_state.label
 
   if is_regression:
     return st.session_state.df.copy()
-  label=st.session_state.label
   df[label]=df[label].apply(target_encoding_callback)
   return df
 
@@ -74,7 +75,7 @@ def target_encoding_callback(x):
   df=st.session_state.df
   label=st.session_state.label
   label_values=df[label].unique()
-  choice=st.session_state.choice
+  choice=st.session_state.get('choice',0)
 
   if(choice==1):
     if x==label_values[0]: 

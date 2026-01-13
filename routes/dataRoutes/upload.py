@@ -6,7 +6,7 @@ from util.dataFrame import dataFrame
 
 def uploadPage():
   routeButton("Back","left","home")
-  st.title("I-Data")
+  st.title("I- Data")
   st.subheader("1-Upload you data(csv only)")
 
   upload_file_ui() if 'df' not in st.session_state else loaded_dataset_ui()

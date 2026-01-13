@@ -29,7 +29,7 @@ def filterPage():
 
   st.markdown(styles, unsafe_allow_html=True)
   routeButton("Back", "left", "drop")
-  st.title("I-Data")
+  st.title("I- Data")
   c1,c2=st.columns([1,2.5])
   with c1:
     st.subheader("4- Filter data")
@@ -43,7 +43,8 @@ def filterPage():
 
   for col in num_cols:
     render_num_col_filter(df[col])
-  st.markdown("""
+  if non_num_cols:
+    st.markdown("""
 ### 🔎 Multiple words rule
 
 - Separate expressions using **`/##/`**
@@ -64,7 +65,7 @@ def filterPage():
   st.divider()
   st.subheader("Resulting Dataset:")
   dataFrame(filtered_df())
-  routeButton("Next", "right", 'target')
+  routeButton("Next", "right", 'impute')
 
 
 def render_num_col_filter(col):
@@ -81,9 +82,12 @@ def render_num_col_filter(col):
       max_filter_key='max '+col.name
       min_key = 'input'+str(st.session_state.reset_counter)+' ' + min_filter_key
       max_key = 'input'+str(st.session_state.reset_counter)+' ' +  max_filter_key
+      default_min=st.session_state.filter[min_filter_key] if min_filter_key in st.session_state.filter else 0
+      default_max=st.session_state.filter[max_filter_key] if max_filter_key in st.session_state.filter else 0
       
-      st.number_input('', label_visibility="collapsed", key=min_key, on_change=onchange, args=(min_key,))
-      st.number_input('', label_visibility="collapsed", key=max_key, on_change=onchange, args=(max_key,))
+
+      st.number_input('', label_visibility="collapsed", key=min_key, on_change=onchange, args=(min_key,),value=default_min)
+      st.number_input('', label_visibility="collapsed", key=max_key, on_change=onchange, args=(max_key,),value=default_max)
     with c23:
       if st.button('Reset',key=min_key+" resetter") and min_filter_key in st.session_state.filter:
         st.session_state.filter.pop(min_filter_key)
@@ -112,9 +116,12 @@ def render_non_num_col_filter(col):
       not_in_filter_key='not in '+col.name
       in_key = 'input'+str(st.session_state.reset_counter)+' ' +  in_filter_key
       not_in_key = 'input'+str(st.session_state.reset_counter)+' ' +  not_in_filter_key
-      
-      st.text_input('', label_visibility="collapsed", key=in_key, on_change=onchange, args=(in_key,))
-      st.text_input('', label_visibility="collapsed", key=not_in_key, on_change=onchange, args=(not_in_key,))
+      default_in=st.session_state.filter[in_filter_key] if in_filter_key in st.session_state.filter else ''
+      default_not_in=st.session_state.fitler[not_in_filter_key] if not_in_filter_key in st.session_state.filter else ''
+
+
+      st.text_input('', label_visibility="collapsed", key=in_key, on_change=onchange, args=(in_key,),value=default_in)
+      st.text_input('', label_visibility="collapsed", key=not_in_key, on_change=onchange, args=(not_in_key,),value=default_not_in)
     with c23:
       if st.button('Reset',key=in_key+" resetter") and in_filter_key in st.session_state.filter:
         st.session_state.filter.pop(in_filter_key)
@@ -174,10 +181,6 @@ def filtered_df():
 
   df = df[mask]
 
-  if remove_singleval_col:
-    single_val_cols = [col for col in df.columns if df[col].nunique() <= 1]
-    df = df.drop(columns=single_val_cols, errors='ignore')
-
   if remove_outliers:
     numeric_cols = df.select_dtypes(include='number').columns
     for col in numeric_cols:
@@ -185,6 +188,10 @@ def filtered_df():
       Q3 = df[col].quantile(0.75)
       IQR = Q3 - Q1
       df = df[(df[col] >= Q1 - 1.5*IQR) & (df[col] <= Q3 + 1.5*IQR)]
+
+  if remove_singleval_col:
+    single_val_cols = [col for col in df.columns if df[col].nunique() <= 1]
+    df = df.drop(columns=single_val_cols, errors='ignore')
 
   return df
 

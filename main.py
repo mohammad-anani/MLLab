@@ -4,6 +4,7 @@ from routes.home import homePage
 from routes.dataRoutes.target import targetPage
 from routes.dataRoutes.drop import dropPage
 from routes.dataRoutes.filter import filterPage
+from routes.dataRoutes.impute import imputePage
 
 
 
@@ -16,7 +17,8 @@ ROUTES = {
     "upload": uploadPage,
     "target": targetPage,
     "drop":dropPage,
-    "filter":filterPage
+    "filter":filterPage,
+    "impute":imputePage
 }
 
 ROUTES.get(st.session_state.page, homePage)()
