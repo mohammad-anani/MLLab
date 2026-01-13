@@ -43,7 +43,7 @@ def filterPage():
 
   for col in num_cols:
     render_num_col_filter(df[col])
-  if non_num_cols:
+  if non_num_cols.any():
     st.markdown("""
 ### 🔎 Multiple words rule
 
@@ -71,7 +71,7 @@ def filterPage():
 def render_num_col_filter(col):
   c1, c2 = st.columns([1, 2.5])
   with c1:
-    st.subheader(col.name)
+    st.subheader(col.name+":")
   with c2:
     c21, c22,c23 = st.columns([1, 4,1])
     with c21:
@@ -105,7 +105,7 @@ def render_num_col_filter(col):
 def render_non_num_col_filter(col):
   c1, c2 = st.columns([1, 2.5])
   with c1:
-    st.subheader(col.name)
+    st.subheader(col.name+":")
   with c2:
     c21, c22,c23 = st.columns([1.5, 2.5,1])
     with c21:
@@ -132,13 +132,8 @@ def render_non_num_col_filter(col):
 
 
 def split_cols_numerical_and_non(df):
-  num_cols = []
-  non_num_cols = []
-  for col in df.columns:
-    if pd.api.types.is_numeric_dtype(df[col]) or pd.api.types.is_bool_dtype(df[col]):
-      num_cols.append(col) 
-    else:
-      non_num_cols.append(col)
+  num_cols = df.select_dtypes(include="number").columns
+  non_num_cols = df.select_dtypes(exclude="number").columns
   return num_cols, non_num_cols
 
 

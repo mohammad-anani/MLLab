@@ -36,4 +36,4 @@ def removed_cols_df():
 
 
 def on_change():
-  st.session_state.cols_to_remove = st.session_state[drop_input]
+  st.session_state.cols_to_remove = st.session_state['drop_input']

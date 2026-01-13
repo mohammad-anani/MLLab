@@ -5,6 +5,8 @@ from routes.dataRoutes.target import targetPage
 from routes.dataRoutes.drop import dropPage
 from routes.dataRoutes.filter import filterPage
 from routes.dataRoutes.impute import imputePage
+from routes.dataRoutes.encode import encodePage
+
 
 
 
@@ -18,7 +20,8 @@ ROUTES = {
     "target": targetPage,
     "drop":dropPage,
     "filter":filterPage,
-    "impute":imputePage
+    "impute":imputePage,
+    "encode":encodePage
 }
 
 ROUTES.get(st.session_state.page, homePage)()
