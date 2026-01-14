@@ -10,16 +10,13 @@ from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
 def encodePage():
   if 'encoding' not in st.session_state:
     st.session_state.encoding={}
-
   if 'encoding_order' not in st.session_state:
     st.session_state.encoding_order={}
-
-
-  st.subheader("6- Encode non-numerical features")
-
   df=imputed_df()
   num_cols,non_num_cols=split_cols_numerical_and_non(df)
 
+
+  st.subheader("6- Encode non-numerical features")
   if not non_num_cols.any():
     st.subheader("You have no non-numerical features!")
     nextButton()
@@ -65,7 +62,6 @@ def encoder_input_ui(col):
 
 
 def ordering_input_ui(col):
-
   key=col.name
   input_key='e_input '+key
 

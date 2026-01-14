@@ -9,114 +9,118 @@ from routes.dataRoutes.encode import cols_with_many_values
 
 
 def reviewPage():
-
   st.subheader("8- Review")
+  review_initial_dataset()
+  review_target()
+  review_removed_features()
+  review_filters()
+  review_missing_values()
+  review_encoding()
+  review_additional_configurations()
+#  nextButton()
 
+
+def review_initial_dataset():
   st.subheader("a- Initial dataset:")
-  df=st.session_state.df
-  dataFrame(df)
+  dataFrame(st.session_state.df)
 
+
+def review_target():
   st.subheader("b- Target:")
-  label=st.session_state.label
-  is_regression=st.session_state.is_regression
-
-
-
-  st.write("**Name:** "+label)
-  st.write("**Type:** "+('Regression' if is_regression else 'Classification'))
+  label = st.session_state.label
+  is_regression = st.session_state.is_regression
+  st.write(markdown_bold("Name:") + " " + label)
+  st.write(markdown_bold("Type:") + " " + ('Regression' if is_regression else 'Classification'))
   if not is_regression:
-    choice=get_choosing_messages(df,label)[st.session_state.choice]
-    st.write("**Encoding choice:** "+choice)
+    df = st.session_state.df
+    choice = get_choosing_messages(df, label)[st.session_state.choice]
+    st.write(markdown_bold("Encoding choice:") + " " + choice)
 
+
+def review_removed_features():
   st.subheader("c- Removed features:")
-  cols_to_remove=st.session_state.cols_to_remove
+  cols_to_remove = st.session_state.cols_to_remove
+  st.write(", ".join(cols_to_remove) if cols_to_remove else "No removed features.")
 
-  if len(cols_to_remove)>0:
-    st.write(", ".join(cols_to_remove))
-  else:
-    st.write("No removed features.")
 
+def review_filters():
   st.subheader("d- Filters:")
-  remove_outliers=st.session_state.remove_outliers
-  remove_singleval_col=st.session_state.remove_singleval_col
-
-  filters=st.session_state.filter
-
-  if len(filters)==0:
-    st.write("**No Filters**")
-  else:
-    removed_cols_df2=removed_cols_df()
-    num_cols,non_num_cols=split_cols_numerical_and_non(removed_cols_df2)
-    for col in num_cols:
-      min_key='min '+col
-      min_val=st.session_state.filter[min_key] if min_key in st.session_state.filter else None
-      max_key='max '+col
-      max_val=st.session_state.filter[max_key] if max_key in st.session_state.filter else None
-
-      if min_val and max_val:
-        st.write(f"**{col}** between **{min_val}** and **{max_val}**")
-      elif min_val:
-        st.write(f"**{col}** more than **{min_val}**")
-      elif max_val:
-        st.write(f"**{col}** less than **{max_val}**")
-
-    for col in non_num_cols:
-      in_key='in '+col
-      in_val=st.session_state.filter[in_key] if in_key in st.session_state.filter else None
-      not_in_key='not in '+col
-      not_in_val=st.session_state.filter[not_in_key] if not_in_key in st.session_state.filter else None
-
-      if in_val and not_in_val:
-        st.write(f"**{col}** should contain '**{format_string_filter(in_val)}**' and shouldn't contain '**{format_string_filter(not_in_val)}**'")
-      elif in_val:
-        st.write(f"**{col}** should contain '**{format_string_filter(in_val)}**'")
-      elif not_in_val:
-        st.write(f"**{col}** shouldn't contain '**{format_string_filter(not_in_val)}**'")
+  _display_filters()
+  st.write(markdown_bold("Remove outliers:") + " " + yes_or_no(st.session_state.remove_outliers))
+  st.write(markdown_bold("Remove single value features:") + " " + yes_or_no(st.session_state.remove_singleval_col))
 
 
-  st.write("**Remove outliers:** "+("Yes" if remove_outliers else "No"))
-  st.write("**Remove single value features:** " + ("Yes" if remove_singleval_col else "No"))
+def _display_filters():
+  filters = st.session_state.filter
+  if not filters:
+    st.write(markdown_bold("No Filters"))
+    return
+  df = removed_cols_df()
+  num_cols, non_num_cols = split_cols_numerical_and_non(df)
+  _display_numeric_filters(num_cols)
+  _display_non_numeric_filters(non_num_cols)
 
 
+def _display_numeric_filters(num_cols):
+  for col in num_cols:
+    min_val = st.session_state.filter.get('min ' + col)
+    max_val = st.session_state.filter.get('max ' + col)
+    if min_val and max_val:
+      st.write(markdown_bold(col) + " between " + markdown_bold(str(min_val)) + " and " + markdown_bold(str(max_val)))
+    elif min_val:
+      st.write(markdown_bold(col) + " more than " + markdown_bold(str(min_val)))
+    elif max_val:
+      st.write(markdown_bold(col) + " less than " + markdown_bold(str(max_val)))
+
+
+def _display_non_numeric_filters(non_num_cols):
+  for col in non_num_cols:
+    in_val = st.session_state.filter.get('in ' + col)
+    not_in_val = st.session_state.filter.get('not in ' + col)
+    if in_val and not_in_val:
+      st.write(markdown_bold(col) + " should contain " + markdown_bold(format_string_filter(in_val)) +
+               " and shouldn't contain " + markdown_bold(format_string_filter(not_in_val)))
+    elif in_val:
+      st.write(markdown_bold(col) + " should contain " + markdown_bold(format_string_filter(in_val)))
+    elif not_in_val:
+      st.write(markdown_bold(col) + " shouldn't contain " + markdown_bold(format_string_filter(not_in_val)))
+
+
+def review_missing_values():
   st.subheader("e- Missing Values:")
-  imputation_method=st.session_state.imputation_method
+  imputation_method = st.session_state.imputation_method
+  st.write(markdown_bold("Replace with:") + " " + imputation_method)
+  st.session_state._imputed_df2 = imputed_df()
 
-  st.write("**Replace with:** "+imputation_method)
-  imputed_df2=imputed_df()
+
+def review_encoding():
   st.subheader("f- Non-numerical features encoding:")
-  num_cols,non_num_cols=split_cols_numerical_and_non(imputed_df2)
-
+  imputed_df2 = getattr(st.session_state, '_imputed_df2', imputed_df())
+  num_cols, non_num_cols = split_cols_numerical_and_non(imputed_df2)
   if len(non_num_cols)==0:
-    st.markdown("**No non-numerical features**")
-  else:
-    encoded_cols=cols_with_many_values(imputed_df2,non_num_cols)
-
-    cols_to_drop = list(set(non_num_cols) - set(encoded_cols)) if encoded_cols else non_num_cols
-
-    if cols_to_drop:
-      st.write("**"+", ".join(cols_to_drop) +"** will be dropped for having more than 20 value.")
-
-    for col in encoded_cols:
-      enc_method=st.session_state.encoding[col] if col in st.session_state.encoding else None
-
-      st.write(f"**{col}**: "+ str(enc_method))
+    st.markdown(markdown_bold("No non-numerical features"))
+    return
+  encoded_cols = cols_with_many_values(imputed_df2, non_num_cols)
+  cols_to_drop = list(set(non_num_cols) - set(encoded_cols)) if encoded_cols else non_num_cols
+  if len(cols_to_drop)>0:
+    st.write(markdown_bold(", ".join(cols_to_drop)) + " will be dropped for having more than 20 value.")
+  for col in encoded_cols:
+    enc_method = st.session_state.encoding.get(col)
+    st.write(markdown_bold(col) + ": " + str(enc_method))
 
 
-
-
+def review_additional_configurations():
   st.subheader("g- Additionnal Configurations:")
-  test_size=st.session_state.test_size
-  with_scaler=st.session_state.with_scaler
-  with_pca=st.session_state.with_pca
-  st.write("**Test sample size:** "+str(test_size*100)+"%")
-  st.write("**Apply Standard Scaler:** "+("Yes" if with_scaler else "No"))
-  st.write("**Apply PCA:** "+("Yes" if with_pca else "No"))
-
-
-
-  nextButton()
-
+  st.write(markdown_bold("Test sample size:") + " " + str(st.session_state.test_size * 100) + "%")
+  st.write(markdown_bold("Apply Standard Scaler:") + " " + yes_or_no(st.session_state.with_scaler))
+  st.write(markdown_bold("Apply PCA:") + " " + yes_or_no(st.session_state.with_pca))
 
 
 def format_string_filter(val):
   return "' or '".join(val.split("/##/"))
+
+def markdown_bold(str):
+  return "**"+str+"**"
+
+def yes_or_no(bl):
+  return "Yes" if bl else "No"

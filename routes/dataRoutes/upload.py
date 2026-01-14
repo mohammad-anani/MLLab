@@ -6,7 +6,6 @@ from util.dataFrame import dataFrame
 
 def uploadPage():
   st.subheader("1-Upload you data(csv only)")
-
   upload_file_ui() if 'df' not in st.session_state else loaded_dataset_ui()
 
 
@@ -22,7 +21,6 @@ def loaded_dataset_ui():
   row_count,col_count=df.shape
   
   dataFrame(df)
-
   st.error("Dataset should have at least 2 columns") if col_count<2 else nextButton()
 
 

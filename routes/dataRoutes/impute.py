@@ -8,12 +8,10 @@ def imputePage():
 
   if 'imputation_method' not in st.session_state:
     st.session_state.imputation_method='mean'
-
-  st.subheader("5- Handle missing values")
-
   df=filtered_df()
   has_na=df.isna().any().any()
 
+  st.subheader("5- Handle missing values")
   if not has_na:
     st.subheader("Your data has no missing values!")
     nextButton()
@@ -60,9 +58,7 @@ def imputed_rows_df():
 def imputed_df():
   df=filtered_df()
   method=st.session_state.imputation_method
-
   num_cols,cat_cols=split_cols_numerical_and_non(df)
-
   df_new = df.copy()
 
   if method in ["mean", "median", "most_frequent"]:
@@ -71,16 +67,13 @@ def imputed_df():
       if cat_cols.any():
         cat_strategy = "most_frequent"
         df_new[cat_cols] = SimpleImputer(strategy=cat_strategy).fit_transform(df_new[cat_cols])
-
   elif method == "knn":
     if num_cols.any():
       df_new[num_cols] = KNNImputer(n_neighbors=5).fit_transform(df_new[num_cols])
       if cat_cols.any():
         df_new[cat_cols] = SimpleImputer(strategy="most_frequent").fit_transform(df_new[cat_cols])
-
   else:
     st.warning(f"Unknown imputation method: {method}")
-
   return pd.DataFrame(df_new)
 
 

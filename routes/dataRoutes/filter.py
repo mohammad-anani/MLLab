@@ -12,38 +12,7 @@ hr {
 }
 </style>
 """
-
-
-def filterPage():
-  if 'filter' not in st.session_state:
-    st.session_state.filter = {}
-
-  if 'reset_counter' not in st.session_state:
-    st.session_state.reset_counter=0  
-
-  if 'remove_outliers' not in st.session_state:
-    st.session_state.remove_outliers=False  
-
-  if 'remove_singleval_col' not in st.session_state:
-    st.session_state.remove_singleval_col=False  
-
-  st.markdown(styles, unsafe_allow_html=True)
-
-  c1,c2=st.columns([1,2.5])
-  with c1:
-    st.subheader("4- Filter data")
-  with c2:
-    if st.button("Reset"):
-      reset_form()
-
-  df = removed_cols_df()
-  label = st.session_state.label
-  num_cols, non_num_cols = split_cols_numerical_and_non(df)
-
-  for col in num_cols:
-    render_num_col_filter(df[col])
-  if non_num_cols.any():
-    st.markdown("""
+string_guide="""
 ### 🔎 Multiple words rule
 
 - Separate expressions using **`/##/`**
@@ -56,7 +25,32 @@ def filterPage():
 
 - **Should contain:** `apple/##/banana`  
   → string may contain **`apple` OR `banana` (or both)**
-""")
+"""
+
+def filterPage():
+  if 'filter' not in st.session_state:
+    st.session_state.filter = {}
+  if 'reset_counter' not in st.session_state:
+    st.session_state.reset_counter=0  
+  if 'remove_outliers' not in st.session_state:
+    st.session_state.remove_outliers=False  
+  if 'remove_singleval_col' not in st.session_state:
+    st.session_state.remove_singleval_col=False  
+  df = removed_cols_df()
+  label = st.session_state.label
+  num_cols, non_num_cols = split_cols_numerical_and_non(df)
+
+  st.markdown(styles, unsafe_allow_html=True)
+  c1,c2=st.columns([1,2.5])
+  with c1:
+    st.subheader("4- Filter data")
+  with c2:
+    if st.button("Reset"):
+      reset_form()
+  for col in num_cols:
+    render_num_col_filter(df[col])
+  if non_num_cols.any():
+    st.markdown(string_guide)
   for col in non_num_cols:
     render_non_num_col_filter(df[col])
   st.checkbox("Remove outliers",key='remove_outliers_input',on_change=on_cb_outlier_change,value=st.session_state.remove_outliers)
@@ -84,7 +78,6 @@ def render_num_col_filter(col):
       default_min=st.session_state.filter[min_filter_key] if min_filter_key in st.session_state.filter else 0
       default_max=st.session_state.filter[max_filter_key] if max_filter_key in st.session_state.filter else 0
       
-
       st.number_input('', label_visibility="collapsed", key=min_key, on_change=onchange, args=(min_key,),value=default_min)
       st.number_input('', label_visibility="collapsed", key=max_key, on_change=onchange, args=(max_key,),value=default_max)
     with c23:
@@ -118,7 +111,6 @@ def render_non_num_col_filter(col):
       default_in=st.session_state.filter[in_filter_key] if in_filter_key in st.session_state.filter else ''
       default_not_in=st.session_state.filter[not_in_filter_key] if not_in_filter_key in st.session_state.filter else ''
 
-
       st.text_input('', label_visibility="collapsed", key=in_key, on_change=onchange, args=(in_key,),value=default_in)
       st.text_input('', label_visibility="collapsed", key=not_in_key, on_change=onchange, args=(not_in_key,),value=default_not_in)
     with c23:
@@ -126,7 +118,6 @@ def render_non_num_col_filter(col):
         st.session_state.filter.pop(in_filter_key)
       if st.button('Reset',key=not_in_key+" resetter") and not_in_filter_key in st.session_state.filter:
         st.session_state.filter.pop(not_in_filter_key)
-  
   st.divider()
 
 
