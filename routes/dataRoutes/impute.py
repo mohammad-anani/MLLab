@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
-from util.routeButton import routeButton
+from util.nextButton import nextButton
 from .filter import filtered_df,split_cols_numerical_and_non
 from sklearn.impute import SimpleImputer, KNNImputer
 
 def imputePage():
-  routeButton("Back","left","filter")
-  st.title("I- Data")
+
+  if 'imputation_method' not in st.session_state:
+    st.session_state.imputation_method='mean'
+
   st.subheader("5- Handle missing values")
 
   df=filtered_df()
@@ -14,7 +16,7 @@ def imputePage():
 
   if not has_na:
     st.subheader("Your data has no missing values!")
-    routeButton("Next","right","encode")
+    nextButton()
   else:
     choose_imputation_ui()
 
@@ -43,7 +45,7 @@ def choose_imputation_ui():
   st.write(df_missing)
   st.subheader("Data with missing values after imputing:")  
   st.write(df_imputed_rows)
-  routeButton("Next","right","encode")
+  nextButton()
 
 
 def missing_values_row_indices():

@@ -1,13 +1,11 @@
 import streamlit as st
 import pandas as pd
-from util.routeButton import routeButton
+from util.nextButton import nextButton
 from util.dataFrame import dataFrame
 from .target import encoded_label_df
 
 
 def dropPage():
-  routeButton("Back","left","target")
-  st.title("I- Data")
   st.subheader("3- Remove unwanted features")
 
   df=encoded_label_df()
@@ -17,12 +15,15 @@ def dropPage():
   cols=x_df.columns
   col_count=x_df.shape[1]
 
+  if 'cols_to_remove' not in st.session_state:
+    st.session_state.cols_to_remove=[]
+
   default_cols = [c for c in st.session_state.get("cols_to_remove", []) if c != label]
 
   st.multiselect("",cols,default=default_cols,max_selections=col_count-1,label_visibility="collapsed",on_change=on_change,key='drop_input' )
   st.subheader("Resulting Dataset:")
   dataFrame(removed_cols_df())
-  routeButton("Next","right",'filter')
+  nextButton()
 
 
 def removed_cols_df():

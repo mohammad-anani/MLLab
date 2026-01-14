@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from util.routeButton import routeButton
+from util.nextButton import nextButton
 from util.dataFrame import dataFrame
 from .drop import removed_cols_df
 
@@ -28,8 +28,7 @@ def filterPage():
     st.session_state.remove_singleval_col=False  
 
   st.markdown(styles, unsafe_allow_html=True)
-  routeButton("Back", "left", "drop")
-  st.title("I- Data")
+
   c1,c2=st.columns([1,2.5])
   with c1:
     st.subheader("4- Filter data")
@@ -65,7 +64,7 @@ def filterPage():
   st.divider()
   st.subheader("Resulting Dataset:")
   dataFrame(filtered_df())
-  routeButton("Next", "right", 'impute')
+  nextButton()
 
 
 def render_num_col_filter(col):
@@ -117,7 +116,7 @@ def render_non_num_col_filter(col):
       in_key = 'input'+str(st.session_state.reset_counter)+' ' +  in_filter_key
       not_in_key = 'input'+str(st.session_state.reset_counter)+' ' +  not_in_filter_key
       default_in=st.session_state.filter[in_filter_key] if in_filter_key in st.session_state.filter else ''
-      default_not_in=st.session_state.fitler[not_in_filter_key] if not_in_filter_key in st.session_state.filter else ''
+      default_not_in=st.session_state.filter[not_in_filter_key] if not_in_filter_key in st.session_state.filter else ''
 
 
       st.text_input('', label_visibility="collapsed", key=in_key, on_change=onchange, args=(in_key,),value=default_in)

@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
-from util.routeButton import routeButton
+from util.nextButton import nextButton
 from util.dataFrame import dataFrame
 
 
 def uploadPage():
-  routeButton("Back","left","home")
-  st.title("I- Data")
   st.subheader("1-Upload you data(csv only)")
 
   upload_file_ui() if 'df' not in st.session_state else loaded_dataset_ui()
@@ -25,7 +23,7 @@ def loaded_dataset_ui():
   
   dataFrame(df)
 
-  st.error("Dataset should have at least 2 columns") if col_count<2 else routeButton("Next","right",'target')
+  st.error("Dataset should have at least 2 columns") if col_count<2 else nextButton()
 
 
 def on_change():

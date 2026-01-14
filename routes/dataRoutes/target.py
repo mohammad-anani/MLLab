@@ -1,13 +1,12 @@
 import streamlit as st
 import pandas as pd
-from util.routeButton import routeButton
+from util.nextButton import nextButton
 from util.dataFrame import dataFrame
 
 
 
 def targetPage():
-  routeButton("Back","left","upload")
-  st.title("I- Data")
+
   st.subheader("2-Specify your target column (aka Label)")
   select_label_ui()
 
@@ -35,16 +34,18 @@ def confirm_label_ui():
   if (not is_reg) and not pd.api.types.is_numeric_dtype(df[label]):
     choose_encoding_ui()
 
-  routeButton("Next","right",'drop')
+  nextButton()
 
 
 def choose_encoding_ui():
   df=st.session_state.df
   label=st.session_state.label
-  label_values=df[label].unique()
-  choosing_messages=[f'0 for {label_values[0]}, 1 for {label_values[1]}',f'0 for {label_values[1]}, 1 for {label_values[0]}']
+  choosing_messages=get_choosing_messages(df,label)
 
-  default_choice = st.session_state.choice if 'choice' in st.session_state else 0
+  if 'choice' not in st.session_state:
+    st.session_state.choice=0
+
+  default_choice = st.session_state.choice
 
   st.subheader("Your label is not binary (0/1). Please choose how you want it to be encoded.")
   choice=st.radio('',choosing_messages,index=default_choice,label_visibility="collapsed",on_change=on_encoding_change,args=(choosing_messages,), key='radio_input')
@@ -117,3 +118,9 @@ def filter_cols(df):
       if n_unique == 2: 
         cols.append(col)
   return cols
+
+
+def get_choosing_messages(df,label):
+  label_values=df[label].unique()
+  choosing_messages=[f'0 for {label_values[0]}, 1 for {label_values[1]}',f'0 for {label_values[1]}, 1 for {label_values[0]}']
+  return choosing_messages

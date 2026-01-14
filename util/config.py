@@ -1,0 +1,9 @@
+route_names=["home",
+    "upload",
+    "target",
+    "drop",
+    "filter",
+    "impute",
+    "encode",
+    'finalize',
+    'review']

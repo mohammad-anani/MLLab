@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from util.routeButton import routeButton
+from util.nextButton import nextButton
 from util.dataFrame import dataFrame
 from .impute import imputed_df
 from .filter import split_cols_numerical_and_non
@@ -14,8 +14,7 @@ def encodePage():
   if 'encoding_order' not in st.session_state:
     st.session_state.encoding_order={}
 
-  routeButton("Back","left","impute")
-  st.title("I- Data")
+
   st.subheader("6- Encode non-numerical features")
 
   df=imputed_df()
@@ -23,18 +22,18 @@ def encodePage():
 
   if not non_num_cols.any():
     st.subheader("You have no non-numerical features!")
-    routeButton("Next",'right','###')
+    nextButton()
 
   for col in non_num_cols:
     choose_col_encode_ui(df[col])
 
-  new_df=encoded_df()
+    new_df=encoded_df()
 
-  st.subheader("Dataset before encoding features:")
-  dataFrame(df)
-  st.subheader("Dataset after encoding features:")
-  dataFrame(new_df)
-  routeButton("Next",'right',"###")
+    st.subheader("Dataset before encoding features:")
+    dataFrame(df)
+    st.subheader("Dataset after encoding features:")
+    dataFrame(new_df)
+    nextButton()
 
 
 def choose_col_encode_ui(col):
@@ -95,9 +94,13 @@ def encoded_df():
   if len(non_num_cols) == 0:
     return df
   
-  low_card_cols = [col for col in non_num_cols if df[col].nunique() <= 20]
+  low_card_cols = cols_with_many_values(df,non_num_cols)
   
   encoded_df = df[num_cols].copy() 
+  
+  if not low_card_cols:
+    return encoded_df
+
   for col in low_card_cols:
     enc_type = st.session_state.encoding.get(col, "One Hot")
     
@@ -123,3 +126,7 @@ def encoded_df():
       encoded_df[col] = transformed
   
   return encoded_df
+
+
+def cols_with_many_values(df,non_num_cols):
+  return [col for col in non_num_cols if df[col].nunique() <= 20] 
