@@ -18,6 +18,9 @@ sections=[('Data',1,8)]
 if 'page' not in st.session_state:
   st.session_state.page=route_names[0]
 
+if 'data' not in st.session_state:
+  st.session_state.data={}
+
 page=st.session_state.page
 page_index=route_names.index(page)
 

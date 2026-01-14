@@ -6,6 +6,7 @@ from routes.dataRoutes.drop import removed_cols_df
 from routes.dataRoutes.filter import split_cols_numerical_and_non
 from routes.dataRoutes.impute import imputed_df
 from routes.dataRoutes.encode import cols_with_many_values
+from routes.dataRoutes.data_state import data_state
 
 
 def reviewPage():
@@ -22,36 +23,36 @@ def reviewPage():
 
 def review_initial_dataset():
   st.subheader("a- Initial dataset:")
-  dataFrame(st.session_state.df)
+  dataFrame(data_state().df)
 
 
 def review_target():
   st.subheader("b- Target:")
-  label = st.session_state.label
-  is_regression = st.session_state.is_regression
+  label = data_state().label
+  is_regression = data_state().is_regression
   st.write(markdown_bold("Name:") + " " + label)
   st.write(markdown_bold("Type:") + " " + ('Regression' if is_regression else 'Classification'))
   if not is_regression:
-    df = st.session_state.df
-    choice = get_choosing_messages(df, label)[st.session_state.choice]
+    df = data_state().df
+    choice = get_choosing_messages(df, label)[data_state().choice]
     st.write(markdown_bold("Encoding choice:") + " " + choice)
 
 
 def review_removed_features():
   st.subheader("c- Removed features:")
-  cols_to_remove = st.session_state.cols_to_remove
+  cols_to_remove = data_state().cols_to_remove
   st.write(", ".join(cols_to_remove) if cols_to_remove else "No removed features.")
 
 
 def review_filters():
   st.subheader("d- Filters:")
   _display_filters()
-  st.write(markdown_bold("Remove outliers:") + " " + yes_or_no(st.session_state.remove_outliers))
-  st.write(markdown_bold("Remove single value features:") + " " + yes_or_no(st.session_state.remove_singleval_col))
+  st.write(markdown_bold("Remove outliers:") + " " + yes_or_no(data_state().remove_outliers))
+  st.write(markdown_bold("Remove single value features:") + " " + yes_or_no(data_state().remove_singleval_col))
 
 
 def _display_filters():
-  filters = st.session_state.filter
+  filters = data_state().filter
   if not filters:
     st.write(markdown_bold("No Filters"))
     return
@@ -63,8 +64,8 @@ def _display_filters():
 
 def _display_numeric_filters(num_cols):
   for col in num_cols:
-    min_val = st.session_state.filter.get('min ' + col)
-    max_val = st.session_state.filter.get('max ' + col)
+    min_val = data_state().filter.get('min ' + col)
+    max_val = data_state().filter.get('max ' + col)
     if min_val and max_val:
       st.write(markdown_bold(col) + " between " + markdown_bold(str(min_val)) + " and " + markdown_bold(str(max_val)))
     elif min_val:
@@ -75,8 +76,8 @@ def _display_numeric_filters(num_cols):
 
 def _display_non_numeric_filters(non_num_cols):
   for col in non_num_cols:
-    in_val = st.session_state.filter.get('in ' + col)
-    not_in_val = st.session_state.filter.get('not in ' + col)
+    in_val = data_state().filter.get('in ' + col)
+    not_in_val = data_state().filter.get('not in ' + col)
     if in_val and not_in_val:
       st.write(markdown_bold(col) + " should contain " + markdown_bold(format_string_filter(in_val)) +
                " and shouldn't contain " + markdown_bold(format_string_filter(not_in_val)))
@@ -88,14 +89,14 @@ def _display_non_numeric_filters(non_num_cols):
 
 def review_missing_values():
   st.subheader("e- Missing Values:")
-  imputation_method = st.session_state.imputation_method
+  imputation_method = data_state().imputation_method
   st.write(markdown_bold("Replace with:") + " " + imputation_method)
-  st.session_state._imputed_df2 = imputed_df()
+  data_state()._imputed_df2 = imputed_df()
 
 
 def review_encoding():
   st.subheader("f- Non-numerical features encoding:")
-  imputed_df2 = getattr(st.session_state, '_imputed_df2', imputed_df())
+  imputed_df2 = getattr(data_state(), '_imputed_df2', imputed_df())
   num_cols, non_num_cols = split_cols_numerical_and_non(imputed_df2)
   if len(non_num_cols)==0:
     st.markdown(markdown_bold("No non-numerical features"))
@@ -105,15 +106,15 @@ def review_encoding():
   if len(cols_to_drop)>0:
     st.write(markdown_bold(", ".join(cols_to_drop)) + " will be dropped for having more than 20 value.")
   for col in encoded_cols:
-    enc_method = st.session_state.encoding.get(col)
+    enc_method = data_state().encoding.get(col)
     st.write(markdown_bold(col) + ": " + str(enc_method))
 
 
 def review_additional_configurations():
   st.subheader("g- Additionnal Configurations:")
-  st.write(markdown_bold("Test sample size:") + " " + str(st.session_state.test_size * 100) + "%")
-  st.write(markdown_bold("Apply Standard Scaler:") + " " + yes_or_no(st.session_state.with_scaler))
-  st.write(markdown_bold("Apply PCA:") + " " + yes_or_no(st.session_state.with_pca))
+  st.write(markdown_bold("Test sample size:") + " " + str(data_state().test_size * 100) + "%")
+  st.write(markdown_bold("Apply Standard Scaler:") + " " + yes_or_no(data_state().with_scaler))
+  st.write(markdown_bold("Apply PCA:") + " " + yes_or_no(data_state().with_pca))
 
 
 def format_string_filter(val):

@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 from util.nextButton import nextButton
 from util.dataFrame import dataFrame
-
+from routes.dataRoutes.data_state import data_state
 
 def uploadPage():
   st.subheader("1-Upload you data(csv only)")
-  upload_file_ui() if 'df' not in st.session_state else loaded_dataset_ui()
+  upload_file_ui() if 'df' not in data_state() else loaded_dataset_ui()
 
 
 def upload_file_ui():
@@ -17,7 +17,7 @@ def upload_file_ui():
 
 
 def loaded_dataset_ui():
-  df=st.session_state.df
+  df=data_state()['df']
   row_count,col_count=df.shape
   
   dataFrame(df)
@@ -29,6 +29,6 @@ def on_change():
   if uploaded_file:
     try:
       df = pd.read_csv(uploaded_file)
-      st.session_state.df = df
+      data_state()['df'] = df
     except Exception as e:
       st.error("Error in file uploading. Try again")

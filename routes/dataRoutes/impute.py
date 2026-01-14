@@ -3,11 +3,12 @@ import pandas as pd
 from util.nextButton import nextButton
 from .filter import filtered_df,split_cols_numerical_and_non
 from sklearn.impute import SimpleImputer, KNNImputer
+from routes.dataRoutes.data_state import data_state
 
 def imputePage():
 
-  if 'imputation_method' not in st.session_state:
-    st.session_state.imputation_method='mean'
+  if 'imputation_method' not in data_state():
+    data_state().imputation_method='mean'
   df=filtered_df()
   has_na=df.isna().any().any()
 
@@ -30,7 +31,7 @@ def choose_imputation_ui():
 
   imputation_methods=['mean','median','most_frequent','knn']
 
-  default_val=imputation_methods.index(st.session_state.imputation_method) if 'imputation_method' in st.session_state else 0
+  default_val=imputation_methods.index(data_state().imputation_method) if 'imputation_method' in data_state() else 0
 
   st.write(na_df)
   st.subheader("Choose the imputation method for the missing values in your dataset:")
@@ -57,7 +58,7 @@ def imputed_rows_df():
 
 def imputed_df():
   df=filtered_df()
-  method=st.session_state.imputation_method
+  method=data_state().imputation_method
   num_cols,cat_cols=split_cols_numerical_and_non(df)
   df_new = df.copy()
 
@@ -78,4 +79,4 @@ def imputed_df():
 
 
 def on_change():
-  st.session_state.imputation_method=st.session_state['select_input']
+  data_state().imputation_method=st.session_state['select_input']

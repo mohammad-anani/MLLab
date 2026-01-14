@@ -5,13 +5,14 @@ from util.dataFrame import dataFrame
 from .impute import imputed_df
 from .filter import split_cols_numerical_and_non
 from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+from routes.dataRoutes.data_state import data_state
 
 
 def encodePage():
-  if 'encoding' not in st.session_state:
-    st.session_state.encoding={}
-  if 'encoding_order' not in st.session_state:
-    st.session_state.encoding_order={}
+  if 'encoding' not in data_state():
+    data_state().encoding={}
+  if 'encoding_order' not in data_state():
+    data_state().encoding_order={}
   df=imputed_df()
   num_cols,non_num_cols=split_cols_numerical_and_non(df)
 
@@ -19,10 +20,9 @@ def encodePage():
   st.subheader("6- Encode non-numerical features")
   if not non_num_cols.any():
     st.subheader("You have no non-numerical features!")
-    nextButton()
-
-  for col in non_num_cols:
-    choose_col_encode_ui(df[col])
+  else:
+    for col in non_num_cols:
+      choose_col_encode_ui(df[col])
 
     new_df=encoded_df()
 
@@ -30,7 +30,7 @@ def encodePage():
     dataFrame(df)
     st.subheader("Dataset after encoding features:")
     dataFrame(new_df)
-    nextButton()
+  nextButton()
 
 
 def choose_col_encode_ui(col):
@@ -49,15 +49,15 @@ def encoder_input_ui(col):
   encoding_methods=['One Hot','Ordinal']
   key=col.name
 
-  if key not in st.session_state.encoding:
-    st.session_state.encoding[key]=encoding_methods[0]
+  if key not in data_state().encoding:
+    data_state().encoding[key]=encoding_methods[0]
 
   input_key='input '+key
-  default_index=encoding_methods.index(st.session_state.encoding[key])
+  default_index=encoding_methods.index(data_state().encoding[key])
 
   st.selectbox('',options=encoding_methods,key=input_key,on_change=on_change,args=(input_key,),index=default_index)
 
-  if st.session_state.encoding[key]==encoding_methods[1]:
+  if data_state().encoding[key]==encoding_methods[1]:
     ordering_input_ui(col)
 
 
@@ -65,22 +65,22 @@ def ordering_input_ui(col):
   key=col.name
   input_key='e_input '+key
 
-  if key not in st.session_state.encoding_order:
-    st.session_state.encoding_order[key]=list(col.unique())
+  if key not in data_state().encoding_order:
+    data_state().encoding_order[key]=list(col.unique())
 
   st.subheader("Arrange the values in the order you want(first selection is 0, then 1, ...).")
-  st.multiselect('',options=list(col.unique()),default=st.session_state.encoding_order[key],key=input_key,on_change=on_order_change,args=(input_key,))
+  st.multiselect('',options=list(col.unique()),default=data_state().encoding_order[key],key=input_key,on_change=on_order_change,args=(input_key,))
 
-  if len(st.session_state.encoding_order[key])!= col.nunique():
+  if len(data_state().encoding_order[key])!= col.nunique():
     st.error("Some values are missing; they’ll be filled automatically.")
 
 
 def on_change(key):
-  st.session_state.encoding[key[6:]]=st.session_state[key]
+  data_state().encoding[key[6:]]=st.session_state[key]
 
 
 def on_order_change(key):
-  st.session_state.encoding_order[key[8:]]=st.session_state[key]
+  data_state().encoding_order[key[8:]]=st.session_state[key]
 
 
 def encoded_df():
@@ -98,7 +98,7 @@ def encoded_df():
     return encoded_df
 
   for col in low_card_cols:
-    enc_type = st.session_state.encoding.get(col, "One Hot")
+    enc_type = data_state().encoding.get(col, "One Hot")
     
     if enc_type == "One Hot":
       ohe = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
@@ -111,7 +111,7 @@ def encoded_df():
       encoded_df = pd.concat([encoded_df, transformed_df], axis=1)
     
     elif enc_type == "Ordinal":
-      user_order = st.session_state.encoding_order.get(col, [])
+      user_order = data_state().encoding_order.get(col, [])
       all_values = df[col].dropna().unique().tolist()
       
       missing = [v for v in all_values if v not in user_order]
