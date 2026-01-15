@@ -6,4 +6,4 @@ route_names=["home",
     "impute",
     "encode",
     'finalize',
-    'review']
+    'review','choose','tune','ensemble']

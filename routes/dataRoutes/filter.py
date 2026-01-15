@@ -41,6 +41,23 @@ def filterPage():
   label = data_state().label
   num_cols, non_num_cols = split_cols_numerical_and_non(df)
 
+  for col in data_state()['cols_to_remove']:
+    min_col_key='min '+col
+    max_col_key='max '+col
+    in_col_key='in '+col
+    not_in_col_key='not in '+col
+
+    if min_col_key in data_state().filter:
+      del data_state().filter[min_col_key]
+    if max_col_key in data_state().filter:
+      del data_state().filter[max_col_key]
+    if in_col_key in data_state().filter:
+      del data_state().filter[in_col_key]
+    if not_in_col_key in data_state().filter:
+      del data_state().filter[not_in_col_key]
+
+
+
   st.markdown(styles, unsafe_allow_html=True)
   c1,c2=st.columns([1,2.5])
   with c1:

@@ -18,7 +18,7 @@ def reviewPage():
   review_missing_values()
   review_encoding()
   review_additional_configurations()
-#  nextButton()
+  nextButton()
 
 
 def review_initial_dataset():

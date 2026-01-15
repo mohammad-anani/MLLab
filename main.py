@@ -11,15 +11,22 @@ from routes.dataRoutes.impute import imputePage
 from routes.dataRoutes.encode import encodePage
 from routes.dataRoutes.finalize import finalizePage
 from routes.dataRoutes.review import reviewPage
+from routes.modelRoutes.choose import choosePage 
+from routes.modelRoutes.tune import tunePage 
+from routes.modelRoutes.ensemble import ensemblePage 
+
+
 
 routes = {name: globals()[f"{name}Page"] for name in route_names}
-sections=[('Data',1,8)]
+sections=[('Data',1,8),('Model',9,9)]
 
 if 'page' not in st.session_state:
   st.session_state.page=route_names[0]
 
 if 'data' not in st.session_state:
   st.session_state.data={}
+if 'model' not in st.session_state:
+  st.session_state.model={}
 
 page=st.session_state.page
 page_index=route_names.index(page)

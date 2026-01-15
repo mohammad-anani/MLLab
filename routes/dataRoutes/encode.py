@@ -13,6 +13,14 @@ def encodePage():
     data_state().encoding={}
   if 'encoding_order' not in data_state():
     data_state().encoding_order={}
+
+  for col in data_state()['cols_to_remove']:
+    if col in data_state().encoding:
+      del data_state().encoding[col]
+      if col in data_state().encoding_order:
+        del data_state().encoding_order[col]
+
+
   df=imputed_df()
   num_cols,non_num_cols=split_cols_numerical_and_non(df)
 
