@@ -10,7 +10,6 @@ from routes.dataRoutes.data_state import data_state
 
 
 def reviewPage():
-  """Page to review dataset, preprocessing, and configuration"""
   st.subheader("8- Review")
   review_initial_dataset()
   review_target()

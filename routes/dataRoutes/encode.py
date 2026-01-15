@@ -166,7 +166,7 @@ def encode_df(df, encoding_map, encoding_order, fit=True, encoders=None):
 def encoded_df():
   df = imputed_df()
   ds = data_state()
-  return encode_df(df, ds.encoding, ds.encoding_order)
+  return encode_df(df, ds.encoding, ds.encoding_order)[0]
 
 
 def cols_with_many_values(df, non_num_cols):

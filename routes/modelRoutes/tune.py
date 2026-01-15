@@ -3,7 +3,7 @@ from routes.dataRoutes.data_state import data_state
 from routes.modelRoutes.model_state import model_state
 from util.nextButton import nextButton
 
-no_tuning_message="This model does not require hyperparameters tuning."
+no_tuning_message = "This model does not require hyperparameters tuning."
 
 
 def linear_regression_tuning():
@@ -11,212 +11,192 @@ def linear_regression_tuning():
 
 
 def svm_tuning():
-  if 'kernel' not in model_state().tuning:
-    model_state().tuning['kernel'] = 'rbf'
-  if 'C' not in model_state().tuning:
-    model_state().tuning['C'] = 1.0
-  if 'epsilon' not in model_state().tuning:
-    model_state().tuning['epsilon'] = 0.1
-  if 'gamma_choice' not in model_state().tuning:
-    model_state().tuning['gamma_choice'] = 'scale'
-  if 'gamma' not in model_state().tuning:
-    model_state().tuning['gamma']=0.01
+  ms = model_state()
+  tuning = ms.get('tuning',{})
+  ms.tuning = tuning
+
+  tuning.setdefault('kernel', 'rbf')
+  tuning.setdefault('C', 1.0)
+  tuning.setdefault('epsilon', 0.1)
+  tuning.setdefault('gamma_choice', 'scale')
+  tuning.setdefault('gamma', 0.01)
 
   kernel_options = ['linear', 'poly', 'rbf', 'sigmoid']
-  default_kernel = model_state().tuning.get('kernel',None)  
-
-  C_options =[0.01,0.1,1,10,100,1000]
-  default_C =  model_state().tuning.get('C',None) 
-
-  epsilon_range = (0.001, 1.0)
-  default_epsilon = model_state().tuning.get('epsilon',None) 
-
-  gamma_options = ['scale', 'auto', 'manual']
-  default_gamma =  model_state().tuning.get('gamma_choice',None) 
-
   st.selectbox(
     "Kernel:",
     options=kernel_options,
-    index=kernel_options.index(default_kernel),
-    on_change=on_kernel_change,key='kernel'
+    index=kernel_options.index(tuning['kernel']),
+    on_change=on_kernel_change,
+    key='kernel'
   )
 
+  C_options = [0.01, 0.1, 1, 10, 100, 1000]
   st.selectbox(
     "C (regularization):",
     options=C_options,
-    index=C_options.index(default_C),
-    on_change=on_C_change,key='C'
+    index=C_options.index(tuning['C']),
+    on_change=on_C_change,
+    key='C'
   )
 
   st.slider(
     "Epsilon (tube width):",
-    min_value=epsilon_range[0],
-    max_value=epsilon_range[1],
-    value=default_epsilon,
+    min_value=0.001,
+    max_value=1.0,
+    value=tuning['epsilon'],
     step=0.001,
-    on_change=on_epsilon_change,key='epsilon'
+    on_change=on_epsilon_change,
+    key='epsilon'
   )
 
+  gamma_options = ['scale', 'auto', 'manual']
   st.selectbox(
     "Gamma:",
     options=gamma_options,
-    index=gamma_options.index(default_gamma),
-    on_change=on_gamma_choice_change,key='gamma_choice'
+    index=gamma_options.index(tuning['gamma_choice']),
+    on_change=on_gamma_choice_change,
+    key='gamma_choice'
   )
 
-  if model_state().tuning['gamma_choice'] == 'manual':
-    gamma = st.slider(
+  if tuning['gamma_choice'] == 'manual':
+    st.slider(
       "Gamma value:",
       min_value=0.01,
       max_value=10.0,
-      value= model_state().tuning['gamma'],
+      value=tuning['gamma'],
       step=0.01,
-      on_change=on_gamma_value_change,key='gamma'
+      on_change=on_gamma_value_change,
+      key='gamma'
     )
 
+
 def knn_tuning():
-  if 'n_neighbors' not in model_state().tuning:
-    model_state().tuning['n_neighbors'] = 5
-  if 'weights' not in model_state().tuning:
-    model_state().tuning['weights'] = 'uniform'
-  if 'algorithm' not in model_state().tuning:
-    model_state().tuning['algorithm'] = 'auto'
+  ms = model_state()
+  tuning = ms.get('tuning', {})
+  ms.tuning=tuning
 
-  n_neighbors_range = (1, 50)
-  default_n_neighbors = model_state().tuning.get('n_neighbors')
-
-  weights_options = ['uniform', 'distance']
-  default_weights = model_state().tuning.get('weights')
-
-  algorithm_options = ['auto', 'ball_tree', 'kd_tree', 'brute']
-  default_algorithm = model_state().tuning.get('algorithm')
+  tuning.setdefault('n_neighbors', 5)
+  tuning.setdefault('weights', 'uniform')
+  tuning.setdefault('algorithm', 'auto')
 
   st.slider(
     "Number of Neighbors (n_neighbors):",
-    min_value=n_neighbors_range[0],
-    max_value=n_neighbors_range[1],
-    value=default_n_neighbors,
+    min_value=1,
+    max_value=50,
+    value=tuning['n_neighbors'],
     step=1,
     on_change=on_n_neighbors_change,
     key='n_neighbors'
   )
 
+  weights_options = ['uniform', 'distance']
   st.selectbox(
     "Weights:",
     options=weights_options,
-    index=weights_options.index(default_weights),
+    index=weights_options.index(tuning['weights']),
     on_change=on_weights_change,
     key='weights'
   )
 
+  algorithm_options = ['auto', 'ball_tree', 'kd_tree', 'brute']
   st.selectbox(
     "Algorithm:",
     options=algorithm_options,
-    index=algorithm_options.index(default_algorithm),
+    index=algorithm_options.index(tuning['algorithm']),
     on_change=on_algorithm_change,
     key='algorithm'
   )
 
+
 def decision_tree_reg_tuning():
-  if 'max_depth' not in model_state().tuning:
-    model_state().tuning['max_depth'] = None
-  if 'criterion' not in model_state().tuning:
-    model_state().tuning['criterion'] = 'squared_error'
-
-  max_depth_range = (1, 50)
-  default_max_depth = model_state().tuning.get('max_depth', None)
-
-  criterion_options = ['squared_error', 'friedman_mse', 'absolute_error']
-  default_criterion = model_state().tuning.get('criterion', 'squared_error')
+  ms = model_state()
+  tuning = ms.get('tuning', {})
+  ms.tuning=tuning
+  tuning.setdefault('max_depth', None)
+  tuning.setdefault('criterion', 'squared_error')
 
   st.slider(
     "Max Depth:",
-    min_value=max_depth_range[0],
-    max_value=max_depth_range[1],
-    value=default_max_depth if default_max_depth is not None else max_depth_range[1],
+    min_value=1,
+    max_value=50,
+    value=tuning['max_depth'] if tuning['max_depth'] is not None else 50,
     step=1,
     on_change=on_max_depth_change,
     key='max_depth'
   )
 
+  criterion_options = ['squared_error', 'friedman_mse', 'absolute_error']
   st.selectbox(
     "Criterion:",
     options=criterion_options,
-    index=criterion_options.index(default_criterion),
+    index=criterion_options.index(tuning['criterion']),
     on_change=on_criterion_change,
     key='criterion'
   )
 
+
 def logistic_regression_tuning():
-  if 'C' not in model_state().tuning:
-    model_state().tuning['C'] = 1.0
-  if 'penalty' not in model_state().tuning:
-    model_state().tuning['penalty'] = 'l2'
-  if 'solver' not in model_state().tuning:
-    model_state().tuning['solver'] = 'lbfgs'
+  ms = model_state()
+  tuning = ms.get('tuning', {})
+  ms.tuning=tuning
+  tuning.setdefault('C', 1.0)
+  tuning.setdefault('penalty', 'l2')
+  tuning.setdefault('solver', 'lbfgs')
 
   C_options = [0.01, 0.1, 1, 10, 100, 1000]
-  default_C = model_state().tuning.get('C', 1.0)
-
-  penalty_options = ['l1', 'l2', 'elasticnet', 'none']
-  default_penalty = model_state().tuning.get('penalty', 'l2')
-
-  solver_options = ['lbfgs', 'liblinear', 'saga', 'newton-cg']
-  default_solver = model_state().tuning.get('solver', 'lbfgs')
-
   st.selectbox(
     "Regularization strength (C):",
     options=C_options,
-    index=C_options.index(default_C),
+    index=C_options.index(tuning['C']),
     on_change=on_logreg_C_change,
     key='C'
   )
 
+  penalty_options = ['l1', 'l2', 'elasticnet', 'none']
   st.selectbox(
     "Penalty:",
     options=penalty_options,
-    index=penalty_options.index(default_penalty),
+    index=penalty_options.index(tuning['penalty']),
     on_change=on_logreg_penalty_change,
     key='penalty'
   )
 
+  solver_options = ['lbfgs', 'liblinear', 'saga', 'newton-cg']
   st.selectbox(
     "Solver:",
     options=solver_options,
-    index=solver_options.index(default_solver),
+    index=solver_options.index(tuning['solver']),
     on_change=on_logreg_solver_change,
     key='solver'
   )
 
+
 def decision_tree_class_tuning():
-  if 'max_depth' not in model_state().tuning:
-    model_state().tuning['max_depth'] = None
-  if 'criterion' not in model_state().tuning:
-    model_state().tuning['criterion'] = 'gini'
-
-  max_depth_range = (1, 50)
-  default_max_depth = model_state().tuning.get('max_depth', None)
-
-  criterion_options = ['gini', 'entropy', 'log_loss']
-  default_criterion = model_state().tuning.get('criterion', 'gini')
+  ms = model_state()
+  tuning = ms.get('tuning', {})
+  ms.tuning=tuning
+  tuning.setdefault('max_depth', None)
+  tuning.setdefault('criterion', 'gini')
 
   st.slider(
     "Max Depth:",
-    min_value=max_depth_range[0],
-    max_value=max_depth_range[1],
-    value=default_max_depth if default_max_depth is not None else max_depth_range[1],
+    min_value=1,
+    max_value=50,
+    value=tuning['max_depth'] if tuning['max_depth'] is not None else 50,
     step=1,
     on_change=on_tree_max_depth_change,
     key='max_depth'
   )
 
+  criterion_options = ['gini', 'entropy', 'log_loss']
   st.selectbox(
     "Criterion:",
     options=criterion_options,
-    index=criterion_options.index(default_criterion),
+    index=criterion_options.index(tuning['criterion']),
     on_change=on_tree_criterion_change,
     key='criterion'
   )
+
 
 
 def on_tree_max_depth_change():
@@ -264,35 +244,36 @@ def on_gamma_choice_change():
 def on_gamma_value_change():
   model_state().tuning['gamma'] = st.session_state.gamma
 
+
+
 regression_models_tuning = {
-    'Linear Regression':linear_regression_tuning,
-    'Support Vector Regression (SVR)':svm_tuning,
-    'K-Nearest Neighbors Regressor':knn_tuning,
-    'Decision Tree Regressor':decision_tree_reg_tuning
+  'Linear Regression': linear_regression_tuning,
+  'Support Vector Regression (SVR)': svm_tuning,
+  'K-Nearest Neighbors Regressor': knn_tuning,
+  'Decision Tree Regressor': decision_tree_reg_tuning
 }
 
-
 classification_models_tuning = {
-    'Logistic Regression':logistic_regression_tuning,
-    'Support Vector Classifier (SVC)':svm_tuning,
-    'K-Nearest Neighbors Classifier':knn_tuning,
-    'Decision Tree Classifier':decision_tree_class_tuning
+  'Logistic Regression': logistic_regression_tuning,
+  'Support Vector Classifier (SVC)': svm_tuning,
+  'K-Nearest Neighbors Classifier': knn_tuning,
+  'Decision Tree Classifier': decision_tree_class_tuning
 }
 
 
 def tunePage():
+  """Page to tune model hyperparameters."""
+  ds = data_state()
+  ms = model_state()
+
   st.subheader('2- Tune model hyperparameters:')
 
-  if 'tuning' not in model_state():
-    model_state().tuning={'model':model_state().model}
-  elif model_state().tuning['model'] != model_state().model:
-    model_state().tuning.clear()
-    model_state().tuning={'model':model_state().model}
+  if 'tuning' not in ms or ms['tuning'].get('model') != ms.model:
+    ms['tuning'] = {'model': ms.model}
 
-  if data_state().is_regression:
-    regression_models_tuning[model_state().model]()
+  if ds.is_regression:
+    regression_models_tuning[ms.model]()
   else:
-    classification_models_tuning[model_state().model]()
+    classification_models_tuning[ms.model]()
+
   nextButton()
-
-

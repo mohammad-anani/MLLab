@@ -55,12 +55,12 @@ def filterPage():
       reset_form()
 
   for col in num_cols:
-    render_num_col_filter(col)
+    render_num_col_filter(df[col])
 
   if len(non_num_cols) > 0:
     st.markdown(string_guide)
   for col in non_num_cols:
-    render_non_num_col_filter(col)
+    render_non_num_col_filter(df[col])
 
   st.checkbox(
     "Remove outliers",
@@ -185,7 +185,7 @@ def split_cols_numerical_and_non(df):
 
 def onchange(filter_key):
   ds = data_state()
-  value = st.session_state.get(f"input {filter_key}", '')
+  value = st.session_state.get(f"input{ds.reset_counter} {filter_key}", '')
   if value != '':
     ds.filter[filter_key] = value
   else:
