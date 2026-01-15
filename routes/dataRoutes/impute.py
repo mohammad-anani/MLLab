@@ -35,7 +35,7 @@ def choose_imputation_ui():
 
   st.write(na_df)
   st.subheader("Choose the imputation method for the missing values in your dataset:")
-  st.selectbox('',options=imputation_methods,on_change=on_change,key='select_input',index=default_val)
+  st.selectbox('',options=imputation_methods,on_change=on_change,key='select_input',index=default_val,label_visibility='collapsed')
 
   df_missing = df[df.isna().any(axis=1)]
   df_imputed_rows=imputed_rows_df()

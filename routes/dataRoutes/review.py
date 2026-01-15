@@ -107,7 +107,16 @@ def review_encoding():
     st.write(markdown_bold(", ".join(cols_to_drop)) + " will be dropped for having more than 20 value.")
   for col in encoded_cols:
     enc_method = data_state().encoding.get(col)
-    st.write(markdown_bold(col) + ": " + str(enc_method))
+
+    c1,c2=st.columns([1,8])
+    with c1:
+      st.write(markdown_bold(col + ":"))
+
+    with c2:
+      st.write(enc_method)
+      if enc_method=='Ordinal':
+        order=data_state().encoding_order[col]
+        st.write(markdown_bold("Order:")+" "+", ".join(order))
 
 
 def review_additional_configurations():

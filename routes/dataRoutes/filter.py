@@ -88,7 +88,7 @@ def render_num_col_filter(col):
         data_state().filter.pop(max_filter_key)
 
   cur_min = st.session_state.get(min_key, 0.0)
-  cur_max = data_state.get(max_key, 0.0)
+  cur_max = data_state().get(max_key, 0.0)
   
   if cur_min > cur_max:
     st.error(f"Min value ({cur_min}) can't be greater than Max value ({cur_max})")

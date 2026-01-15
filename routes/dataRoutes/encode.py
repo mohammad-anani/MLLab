@@ -55,7 +55,7 @@ def encoder_input_ui(col):
   input_key='input '+key
   default_index=encoding_methods.index(data_state().encoding[key])
 
-  st.selectbox('',options=encoding_methods,key=input_key,on_change=on_change,args=(input_key,),index=default_index)
+  st.selectbox('',options=encoding_methods,key=input_key,on_change=on_change,args=(input_key,),index=default_index,label_visibility='collapsed')
 
   if data_state().encoding[key]==encoding_methods[1]:
     ordering_input_ui(col)
@@ -69,7 +69,7 @@ def ordering_input_ui(col):
     data_state().encoding_order[key]=list(col.unique())
 
   st.subheader("Arrange the values in the order you want(first selection is 0, then 1, ...).")
-  st.multiselect('',options=list(col.unique()),default=data_state().encoding_order[key],key=input_key,on_change=on_order_change,args=(input_key,))
+  st.multiselect('',options=list(col.unique()),default=data_state().encoding_order[key],key=input_key,on_change=on_order_change,args=(input_key,),label_visibility='collapsed')
 
   if len(data_state().encoding_order[key])!= col.nunique():
     st.error("Some values are missing; they’ll be filled automatically.")
