@@ -15,6 +15,9 @@ from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 
 import streamlit as st
+import pandas as pd
+from datetime import datetime
+
 
 from sklearn.metrics import (
     mean_squared_error,
@@ -23,7 +26,7 @@ from sklearn.metrics import (
     accuracy_score,
     f1_score,
     precision_score,
-    recall_score
+    recall_score,confusion_matrix
 )
 
 def preprocess_data():
@@ -47,22 +50,24 @@ def preprocess_data():
 
   X_train, encoders = encode_df(X_train, encoding, encoding_order, fit=True)
   X_test = encode_df(X_test, encoding, encoding_order, fit=False, encoders=encoders)
+  st.session_state.encoders=encoders
 
   if with_scaler:
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test = scaler.transform(X_test)
+    st.session_state.scaler = scaler
 
   if with_pca:
     pca = PCA(n_components=0.95)
     X_train = pca.fit_transform(X_train)
     X_test = pca.transform(X_test)
+    st.session_state.pca = pca    
 
   return X_train, X_test, Y_train, Y_test
 
 
 def build_model():
-  """Build the base model using selected type and tuned hyperparameters."""
   is_regression = data_state().is_regression
   model_name = model_state().model
   tuning = model_state().tuning.copy()
@@ -153,7 +158,12 @@ def test_model(model, Y_predict, Y_test):
     metrics["Precision"] = precision_score(Y_test, Y_predict, average='weighted', zero_division=0)
     metrics["Recall"] = recall_score(Y_test, Y_predict, average='weighted', zero_division=0)
     metrics["F1 Score"] = f1_score(Y_test, Y_predict, average='weighted', zero_division=0)
-
+    tn, fp, fn, tp = confusion_matrix(Y_test, Y_predict).ravel()
+    
+    metrics["True Positives"] = int(tp)
+    metrics["False Positives"] = int(fp)
+    metrics["False Negatives"] = int(fn)
+    metrics["True Negatives"] = int(tn)
   return metrics
 
 
@@ -191,3 +201,28 @@ def needs_retraining():
   current_state = store_current_state()
 
   return current_state != last_state
+
+
+def predict_new_data(model, input_data):
+  ds = data_state()
+  
+  if isinstance(input_data, dict):
+    df_input = pd.DataFrame([input_data])
+  else:
+    df_input = input_data.copy()
+
+  encoders = st.session_state.get('encoders')
+  df_input = encode_df(df_input, ds.encoding, ds.encoding_order, fit=False, encoders=encoders)
+
+  X_processed = df_input
+
+  if ds.with_scaler and 'scaler' in st.session_state:
+    X_processed = st.session_state.scaler.transform(X_processed)
+  
+  if ds.with_pca and 'pca' in st.session_state:
+    X_processed = st.session_state.pca.transform(X_processed)
+
+  prediction = model.predict(X_processed)
+
+
+  return prediction[0]

@@ -24,16 +24,16 @@ def finalizePage():
   st.checkbox(
     "Apply Standard Scaler",
     value=ds.with_scaler,
-    key='scaler',
+    key='scaler_input',
     on_change=scaler_on_change
   )
   st.checkbox(
     "Apply PCA",
     value=ds.with_pca,
-    key='pca',
+    key='pca_input',
     on_change=pca_on_change
   )
-
+  
   nextButton()
 
 
@@ -45,9 +45,9 @@ def slider_on_change():
 
 def scaler_on_change():
   ds = data_state()
-  ds.with_scaler = st.session_state['scaler']
+  ds.with_scaler = st.session_state['scaler_input']
 
 
 def pca_on_change():
   ds = data_state()
-  ds.with_pca = st.session_state['pca']
+  ds.with_pca = st.session_state['pca_input']

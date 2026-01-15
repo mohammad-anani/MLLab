@@ -117,6 +117,10 @@ def filter_cols(df):
     or (not pd.api.types.is_numeric_dtype(df[col]) and df[col].nunique() == 2)
   ]
 
+def get_label_values():
+  df=data_state().df
+  label=data_state().label
+  return  df[label].unique()[:2]
 
 def get_choosing_messages(df, label):
   val0, val1 = df[label].unique()[:2]
