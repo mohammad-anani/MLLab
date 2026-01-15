@@ -14,11 +14,13 @@ from routes.dataRoutes.review import reviewPage
 from routes.modelRoutes.choose import choosePage 
 from routes.modelRoutes.tune import tunePage 
 from routes.modelRoutes.ensemble import ensemblePage 
+from routes.modelRoutes.report import reportPage  
+from routes.modelRoutes.review import review2Page
 
 
 
 routes = {name: globals()[f"{name}Page"] for name in route_names}
-sections=[('Data',1,8),('Model',9,9)]
+sections=[('Data',1,8),('Model',9,12)]
 
 if 'page' not in st.session_state:
   st.session_state.page=route_names[0]

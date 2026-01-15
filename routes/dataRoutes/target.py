@@ -5,109 +5,119 @@ from util.dataFrame import dataFrame
 from routes.dataRoutes.data_state import data_state
 
 
-
 def targetPage():
-  st.subheader("2-Specify your target column (aka Label)")
+  st.subheader("2- Specify your target column (aka Label)")
   select_label_ui()
   if 'label' in data_state():
     confirm_label_ui()
 
 
 def select_label_ui():
-  df=data_state().df
-  cols=filter_cols(df)
-  index =cols.index(data_state().label) if 'label' in data_state() and data_state().label in cols else None
+  ds = data_state()
+  df = ds.df
+  cols = filter_cols(df)
+  index = cols.index(ds.label) if 'label' in ds and ds.label in cols else None
 
-  st.selectbox("",cols,index=index,    key="my_input",
-  on_change=on_target_change,label_visibility="collapsed")
+  st.selectbox(
+    "",
+    cols,
+    index=index,
+    key="target_column",
+    on_change=on_target_change,
+    label_visibility="collapsed"
+  )
 
 
 def confirm_label_ui():
-  df=data_state().df
-  label=data_state().label
-  is_reg=data_state().is_regression
+  ds = data_state()
+  df = ds.df
+  label = ds.label
+  is_reg = ds.is_regression
 
-  st.subheader(f"Based on your label( {label} ), your problem will be treated as a {'Regression' if is_reg else 'Classification'} problem")
-  if (not is_reg) and not pd.api.types.is_numeric_dtype(df[label]):
+  st.subheader(
+    f"Based on your label ({label}), your problem will be treated as a "
+    f"{'Regression' if is_reg else 'Classification'} problem"
+  )
+
+  if not is_reg and not pd.api.types.is_numeric_dtype(df[label]):
     choose_encoding_ui()
+  
   nextButton()
 
 
 def choose_encoding_ui():
-  df=data_state().df
-  label=data_state().label
-  choosing_messages=get_choosing_messages(df,label)
-  if 'choice' not in data_state():
-    data_state().choice=0
-  default_choice = data_state().choice
+  ds = data_state()
+  df = ds.df
+  label = ds.label
+  messages = get_choosing_messages(df, label)
 
-  st.subheader("Your label is not binary (0/1). Please choose how you want it to be encoded.")
-  choice=st.radio('',choosing_messages,index=default_choice,label_visibility="collapsed",on_change=on_encoding_change,args=(choosing_messages,), key='radio_input')
+  if 'choice' not in ds:
+    ds.choice = 0
+  default_choice = ds.choice
+
+  st.subheader(
+    "Your label is not binary (0/1). Please choose how you want it to be encoded."
+  )
+
+  st.radio(
+    '',
+    messages,
+    index=default_choice,
+    label_visibility="collapsed",
+    on_change=on_encoding_change,
+    args=(messages,),
+    key='label_encoding_radio'
+  )
   dataFrame(encoded_label_df())
 
 
-def on_encoding_change(choosing_messages):
-  data_state().choice=choosing_messages.index(st.session_state['radio_input'])
+def on_encoding_change(messages):
+  data_state().choice = messages.index(st.session_state['label_encoding_radio'])
 
 
 def encoded_label_df():
-  df=data_state().df.copy()
-  is_regression=data_state().is_regression
-  label=data_state().label
+  ds = data_state()
+  df = ds.df.copy()
+  label = ds.label
 
-  if is_regression:
-    return data_state().df.copy()
-  df[label]=df[label].apply(target_encoding_callback)
+  df = df.dropna(subset=[label])
+  if ds.is_regression:
+    return df
+
+  df[label] = df[label].apply(lambda x: target_encoding_callback(x))
   return df
 
 
 def target_encoding_callback(x):
-  if pd.isna(x) or pd.isnull(x):
-    return x
-  df=data_state().df
-  label=data_state().label
-  label_values=df[label].unique()
-  choice=data_state().get('choice',0)
-  if(choice==1):
-    if x==label_values[0]: 
-      return 0 
-    elif x==label_values[1]:
-      return 1
-  else:
-    if x==label_values[1]: 
-      return 0 
-    elif x==label_values[0]:
-      return 1
+  ds = data_state()
+  df = ds.df
+  label = ds.label
+  label_values = df[label].unique()
+  choice = ds.get('choice', 0)
+  idx = 1 - choice
+  return int(x == label_values[idx])
 
 
-def is_regression(label_df):
-  if label_df.nunique() == 2:
-    return False
-  return True
+def determine_regression(label_series):
+  return label_series.nunique() != 2
 
 
 def on_target_change():
-  df=data_state().df
-  label = st.session_state["my_input"]
-  data_state().label =label
-  data_state().is_regression=is_regression(df[label])
+  ds = data_state()
+  df = ds.df
+  label = st.session_state["target_column"]
+  ds.label = label
+  ds.is_regression = determine_regression(df[label])
 
 
 def filter_cols(df):
-  cols = []
-  for col in df.columns:
-    n_unique = df[col].nunique()
-    dtype = df[col].dtype
-    if pd.api.types.is_numeric_dtype(dtype):
-      if n_unique >= 2:
-        cols.append(col)
-    else:
-      if n_unique == 2: 
-        cols.append(col)
-  return cols
+  return [
+    col for col in df.columns
+    if (pd.api.types.is_numeric_dtype(df[col]) and df[col].nunique() >= 2)
+    or (not pd.api.types.is_numeric_dtype(df[col]) and df[col].nunique() == 2)
+  ]
 
 
-def get_choosing_messages(df,label):
-  label_values=df[label].unique()
-  choosing_messages=[f'0 for {label_values[0]}, 1 for {label_values[1]}',f'0 for {label_values[1]}, 1 for {label_values[0]}']
-  return choosing_messages
+def get_choosing_messages(df, label):
+  val0, val1 = df[label].unique()[:2]
+  return [f'0 for {val0}, 1 for {val1}', f'0 for {val1}, 1 for {val0}']

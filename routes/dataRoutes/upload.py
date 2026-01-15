@@ -21,7 +21,11 @@ def loaded_dataset_ui():
   row_count,col_count=df.shape
   
   dataFrame(df)
-  st.error("Dataset should have at least 2 columns") if col_count<2 else nextButton()
+
+  if col_count<2: 
+    st.error("Dataset should have at least 2 columns") 
+  else:
+    nextButton()
 
 
 def on_change():

@@ -5,7 +5,8 @@ from util.dataFrame import dataFrame
 from .drop import removed_cols_df
 from routes.dataRoutes.data_state import data_state
 
-styles="""
+# Styles and guide (unchanged)
+styles = """
 <style>
 hr {
   margin: 0px !important;
@@ -13,7 +14,8 @@ hr {
 }
 </style>
 """
-string_guide="""
+
+string_guide = """
 ### 🔎 Multiple words rule
 
 - Separate expressions using **`/##/`**
@@ -28,51 +30,51 @@ string_guide="""
   → string may contain **`apple` OR `banana` (or both)**
 """
 
+
 def filterPage():
-  if 'filter' not in data_state():
-    data_state().filter = {}
-  if 'reset_counter' not in data_state():
-    data_state().reset_counter=0  
-  if 'remove_outliers' not in data_state():
-    data_state().remove_outliers=False  
-  if 'remove_singleval_col' not in data_state():
-    data_state().remove_singleval_col=False  
+  ds = data_state()
+  ds.filter = ds.get('filter', {})
+  ds.reset_counter = ds.get('reset_counter', 0)
+  ds.remove_outliers = ds.get('remove_outliers', False)
+  ds.remove_singleval_col = ds.get('remove_singleval_col', False)
+
   df = removed_cols_df()
-  label = data_state().label
+  label = ds.label
   num_cols, non_num_cols = split_cols_numerical_and_non(df)
 
-  for col in data_state()['cols_to_remove']:
-    min_col_key='min '+col
-    max_col_key='max '+col
-    in_col_key='in '+col
-    not_in_col_key='not in '+col
-
-    if min_col_key in data_state().filter:
-      del data_state().filter[min_col_key]
-    if max_col_key in data_state().filter:
-      del data_state().filter[max_col_key]
-    if in_col_key in data_state().filter:
-      del data_state().filter[in_col_key]
-    if not_in_col_key in data_state().filter:
-      del data_state().filter[not_in_col_key]
-
-
+  for col in ds.get('cols_to_remove', []):
+    for prefix in ['min ', 'max ', 'in ', 'not in ']:
+      ds.filter.pop(prefix + col, None)
 
   st.markdown(styles, unsafe_allow_html=True)
-  c1,c2=st.columns([1,2.5])
+  c1, c2 = st.columns([1, 2.5])
   with c1:
     st.subheader("4- Filter data")
   with c2:
     if st.button("Reset"):
       reset_form()
+
   for col in num_cols:
-    render_num_col_filter(df[col])
-  if non_num_cols.any():
+    render_num_col_filter(col)
+
+  if len(non_num_cols) > 0:
     st.markdown(string_guide)
   for col in non_num_cols:
-    render_non_num_col_filter(df[col])
-  st.checkbox("Remove outliers",key='remove_outliers_input',on_change=on_cb_outlier_change,value=data_state().remove_outliers)
-  st.checkbox("Remove columns with single value",key='singleval_col_input',on_change=on_cb_singleval_col_change,value=data_state().remove_singleval_col)
+    render_non_num_col_filter(col)
+
+  st.checkbox(
+    "Remove outliers",
+    key='remove_outliers_input',
+    on_change=on_cb_outlier_change,
+    value=ds.remove_outliers
+  )
+  st.checkbox(
+    "Remove columns with single value",
+    key='singleval_col_input',
+    on_change=on_cb_singleval_col_change,
+    value=ds.remove_singleval_col
+  )
+
   st.divider()
   st.subheader("Resulting Dataset:")
   dataFrame(filtered_df())
@@ -80,63 +82,99 @@ def filterPage():
 
 
 def render_num_col_filter(col):
+  ds = data_state()
   c1, c2 = st.columns([1, 2.5])
   with c1:
-    st.subheader(col.name+":")
+    st.subheader(f"{col.name}:")
   with c2:
-    c21, c22,c23 = st.columns([1, 4,1])
-    with c21:
-      st.write("From:")
-      st.write("To:")
-    with c22:
-      min_filter_key='min '+col.name
-      max_filter_key='max '+col.name
-      min_key = 'input'+str(data_state().reset_counter)+' ' + min_filter_key
-      max_key = 'input'+str(data_state().reset_counter)+' ' +  max_filter_key
-      default_min=data_state().filter[min_filter_key] if min_filter_key in data_state().filter else 0
-      default_max=data_state().filter[max_filter_key] if max_filter_key in data_state().filter else 0
-      
-      st.number_input('', label_visibility="collapsed", key=min_key, on_change=onchange, args=(min_key,),value=default_min)
-      st.number_input('', label_visibility="collapsed", key=max_key, on_change=onchange, args=(max_key,),value=default_max)
-    with c23:
-      if st.button('Reset',key=min_key+" resetter") and min_filter_key in data_state().filter:
-        data_state().filter.pop(min_filter_key)
-      if st.button('Reset',key=max_key+" resetter") and max_filter_key in data_state().filter:
-        data_state().filter.pop(max_filter_key)
-
-  cur_min = st.session_state.get(min_key, 0.0)
-  cur_max = data_state().get(max_key, 0.0)
-  
-  if cur_min > cur_max:
-    st.error(f"Min value ({cur_min}) can't be greater than Max value ({cur_max})")
+    render_numeric_input(col.name, ds.reset_counter)
   st.divider()
+
+
+def render_numeric_input(col_name, counter):
+  ds = data_state()
+  c1, c2, c3 = st.columns([1, 4, 1])
+
+  min_key = f"input{counter} min {col_name}"
+  max_key = f"input{counter} max {col_name}"
+  default_min = ds.filter.get(f"min {col_name}", 0)
+  default_max = ds.filter.get(f"max {col_name}", 0)
+
+  with c1:
+    st.write("From:")
+    st.write("To:")
+
+  with c2:
+    st.number_input(
+      '',
+      label_visibility="collapsed",
+      key=min_key,
+      on_change=onchange,
+      args=(f"min {col_name}",),
+      value=default_min
+    )
+    st.number_input(
+      '',
+      label_visibility="collapsed",
+      key=max_key,
+      on_change=onchange,
+      args=(f"max {col_name}",),
+      value=default_max
+    )
+
+  with c3:
+    if st.button('Reset', key=min_key + " resetter"):
+      ds.filter.pop(f"min {col_name}", None)
+    if st.button('Reset', key=max_key + " resetter"):
+      ds.filter.pop(f"max {col_name}", None)
 
 
 def render_non_num_col_filter(col):
+  ds = data_state()
   c1, c2 = st.columns([1, 2.5])
   with c1:
-    st.subheader(col.name+":")
+    st.subheader(f"{col.name}:")
   with c2:
-    c21, c22,c23 = st.columns([1.5, 2.5,1])
-    with c21:
-      st.write("Should Contain:")
-      st.write("Shouldn't Contain:")
-    with c22:
-      in_filter_key='in '+col.name
-      not_in_filter_key='not in '+col.name
-      in_key = 'input'+str(data_state().reset_counter)+' ' +  in_filter_key
-      not_in_key = 'input'+str(data_state().reset_counter)+' ' +  not_in_filter_key
-      default_in=data_state().filter[in_filter_key] if in_filter_key in data_state().filter else ''
-      default_not_in=data_state().filter[not_in_filter_key] if not_in_filter_key in data_state().filter else ''
-
-      st.text_input('', label_visibility="collapsed", key=in_key, on_change=onchange, args=(in_key,),value=default_in)
-      st.text_input('', label_visibility="collapsed", key=not_in_key, on_change=onchange, args=(not_in_key,),value=default_not_in)
-    with c23:
-      if st.button('Reset',key=in_key+" resetter") and in_filter_key in data_state().filter:
-        data_state().filter.pop(in_filter_key)
-      if st.button('Reset',key=not_in_key+" resetter") and not_in_filter_key in data_state().filter:
-        data_state().filter.pop(not_in_filter_key)
+    render_string_input(col.name, ds.reset_counter)
   st.divider()
+
+
+def render_string_input(col_name, counter):
+  ds = data_state()
+  c1, c2, c3 = st.columns([1.5, 2.5, 1])
+
+  in_key = f"input{counter} in {col_name}"
+  not_in_key = f"input{counter} not in {col_name}"
+  default_in = ds.filter.get(f"in {col_name}", '')
+  default_not_in = ds.filter.get(f"not in {col_name}", '')
+
+  with c1:
+    st.write("Should Contain:")
+    st.write("Shouldn't Contain:")
+
+  with c2:
+    st.text_input(
+      '',
+      label_visibility="collapsed",
+      key=in_key,
+      on_change=onchange,
+      args=(f"in {col_name}",),
+      value=default_in
+    )
+    st.text_input(
+      '',
+      label_visibility="collapsed",
+      key=not_in_key,
+      on_change=onchange,
+      args=(f"not in {col_name}",),
+      value=default_not_in
+    )
+
+  with c3:
+    if st.button('Reset', key=in_key + " resetter"):
+      ds.filter.pop(f"in {col_name}", None)
+    if st.button('Reset', key=not_in_key + " resetter"):
+      ds.filter.pop(f"not in {col_name}", None)
 
 
 def split_cols_numerical_and_non(df):
@@ -145,21 +183,24 @@ def split_cols_numerical_and_non(df):
   return num_cols, non_num_cols
 
 
-def onchange(key):
-  filter_key = key[7:]
-  
-  if st.session_state[key] !='':
-    data_state().filter[filter_key] = st.session_state[key]
+def onchange(filter_key):
+  ds = data_state()
+  value = st.session_state.get(f"input {filter_key}", '')
+  if value != '':
+    ds.filter[filter_key] = value
   else:
-    data_state().filter.pop(filter_key) 
+    ds.filter.pop(filter_key, None)
 
 
 def filtered_df():
-  df=removed_cols_df()
-  filters=data_state().filter
-  remove_outliers=data_state().remove_outliers
-  remove_singleval_col=data_state().remove_singleval_col
+  ds = data_state()
+  df = removed_cols_df()
+  filters = ds.filter
+  remove_outliers = ds.remove_outliers
+  remove_singleval_col = ds.remove_singleval_col
+
   mask = pd.Series(True, index=df.index)
+
   for key, value in filters.items():
     if key.startswith("min "):
       col = key[4:]
@@ -171,22 +212,19 @@ def filtered_df():
       col = key[3:]
       if isinstance(value, str):
         or_values = value.split("/##/")
-        mask_col = df[col].apply(lambda x: any(v in str(x) for v in or_values))
-        mask &= mask_col
+        mask &= df[col].apply(lambda x: any(v in str(x) for v in or_values))
     elif key.startswith("not in "):
       col = key[7:]
       if isinstance(value, str):
         or_values = value.split("/##/")
-        mask_col = df[col].apply(lambda x: all(v not in str(x) for v in or_values))
-        mask &= mask_col
+        mask &= df[col].apply(lambda x: all(v not in str(x) for v in or_values))
     else:
       mask &= df[key] == value
 
   df = df[mask]
 
   if remove_outliers:
-    numeric_cols = df.select_dtypes(include='number').columns
-    for col in numeric_cols:
+    for col in df.select_dtypes(include='number').columns:
       Q1 = df[col].quantile(0.25)
       Q3 = df[col].quantile(0.75)
       IQR = Q3 - Q1
@@ -200,20 +238,21 @@ def filtered_df():
 
 
 def reset_form():
-  data_state().filter.clear()
+  ds = data_state()
+  ds.filter.clear()
   for k in list(st.session_state.keys()):
     if k.startswith("input"):
       del st.session_state[k]
-  if data_state().reset_counter==9:
-    data_state().reset_counter=0
-  else:
-    data_state().reset_counter+=1
+
+  ds.reset_counter = (ds.reset_counter + 1) % 10
   st.rerun()
 
 
 def on_cb_outlier_change():
-  data_state().remove_outliers=st.session_state['remove_outliers_input']
+  ds = data_state()
+  ds.remove_outliers = st.session_state['remove_outliers_input']
 
 
 def on_cb_singleval_col_change():
-  data_state().remove_singleval_col=st.session_state['singleval_col_input']
+  ds = data_state()
+  ds.remove_singleval_col = st.session_state['singleval_col_input']

@@ -5,7 +5,7 @@ class DataState:
         try:
             return st.session_state.data[key]
         except KeyError:
-             raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{key}'")
 
     def __setattr__(self, key, value):
         st.session_state.data[key] = value
