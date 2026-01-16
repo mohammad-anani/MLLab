@@ -81,6 +81,7 @@ def on_order_change(key):
 def encode_df(df, encoding_map, encoding_order, fit=True, encoders=None):
     num_cols = df.select_dtypes(include=['number']).columns.tolist()
     cat_cols = df.select_dtypes(exclude=['number']).columns.tolist()
+    cat_cols=cols_with_few_values(df,cat_cols)
     if not cat_cols:
         return (df, encoders) if fit else df
     encoded_df = df[num_cols].copy()

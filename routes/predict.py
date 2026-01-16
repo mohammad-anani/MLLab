@@ -48,7 +48,6 @@ def predictPage():
       )
   submit = button("Predict",'right')
 
-
   if submit:
     result = predict_new_data(st.session_state.trained_model, input_data)
     
@@ -56,8 +55,7 @@ def predictPage():
       st.header(f"{label}: {result:.2f}")
     else:
       choice=data_state().get('choice',None)
-
-      if choice:
+      if choice!=None:
         values=get_label_values()
         st.header(f"{label}: {values[result^choice]}")
       else:

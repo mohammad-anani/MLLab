@@ -49,7 +49,6 @@ def reportPage():
     file_name=(file_name or "MLLab_trained_model")+".pkl",
     mime="application/octet-stream"
   )
-    st.write(st.session_state)
     nextButton()
 
 
